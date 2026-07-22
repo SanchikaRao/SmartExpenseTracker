@@ -97,7 +97,6 @@ export default function ReceiptScanner() {
         <input
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={handleFileUpload}
           disabled={loading}
           className="hidden"
