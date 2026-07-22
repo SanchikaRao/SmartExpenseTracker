@@ -1,26 +1,34 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ExpenseContext = createContext();
-
 const API_URL = 'https://smartexpensetracker-api.vercel.app/api/expenses';
 
 export function ExpenseProvider({ children }) {
-  const [expenses, setExpenses] = useState([]);
+  // 1. Initialize expenses from localStorage so they never disappear on swipe
+  const [expenses, setExpenses] = useState(() => {
+    const localData = localStorage.getItem('app_expenses');
+    return localData ? JSON.parse(localData) : [];
+  });
 
-  // Load saved budget from localStorage, or default to 0
+  // 2. Initialize budget from localStorage
   const [budget, setBudgetState] = useState(() => {
     const savedBudget = localStorage.getItem('app_budget');
     return savedBudget !== null ? Number(savedBudget) : 0;
   });
 
-  // Function to set and persist budget
+  // Keep localStorage continuously updated whenever expenses change
+  useEffect(() => {
+    localStorage.setItem('app_expenses', JSON.stringify(expenses));
+  }, [expenses]);
+
+  // Set budget and persist
   const setBudget = (newBudget) => {
     const amount = Number(newBudget);
     setBudgetState(amount);
     localStorage.setItem('app_budget', amount);
   };
 
-  // Fetch initial expenses from Vercel MongoDB API
+  // Fetch live MongoDB expenses on load
   useEffect(() => {
     fetchExpenses();
   }, []);
@@ -30,42 +38,51 @@ export function ExpenseProvider({ children }) {
       const res = await fetch(API_URL);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) setExpenses(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setExpenses(data);
+        }
       }
     } catch (err) {
-      console.error('Error fetching expenses:', err);
+      console.warn('Could not fetch from MongoDB, using local cache:', err);
     }
   };
 
   const addExpense = async (expense) => {
     const newExpense = {
-      ...expense,
-      id: crypto.randomUUID(),
+      title: expense.title || expense.description || 'Untitled Expense',
+      description: expense.title || expense.description || 'Expense',
+      amount: Number(expense.amount) || 0,
+      category: expense.category || 'General',
       date: expense.date || new Date().toISOString().split('T')[0]
     };
 
-    setExpenses((prev) => [...prev, newExpense]);
+    // Update local UI state immediately
+    setExpenses((prev) => [newExpense, ...prev]);
 
+    // Push to MongoDB
     try {
-      await fetch(API_URL, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newExpense)
       });
+      if (response.ok) {
+        fetchExpenses(); // Refresh to sync MongoDB generated IDs
+      }
     } catch (err) {
-      console.error('Error adding expense:', err);
+      console.error('Error saving to MongoDB:', err);
     }
   };
 
   const deleteExpense = async (id) => {
-    setExpenses((prev) => prev.filter((item) => item.id !== id));
+    setExpenses((prev) => prev.filter((item) => (item.id || item._id) !== id));
 
     try {
       await fetch(`${API_URL}/${id}`, {
         method: 'DELETE'
       });
     } catch (err) {
-      console.error('Error deleting expense:', err);
+      console.error('Error deleting from MongoDB:', err);
     }
   };
 
