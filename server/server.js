@@ -24,7 +24,8 @@ app.get('/', (req, res) => {
 });
 
 // Expense Routes
-const expenseRoutes = require('./routes/expenseRoutes'); // or your exact route path
+// Make sure the string matches your EXACT file name and casing!
+const expenseRoutes = require('./routes/expenseRoutes');// or your exact route path
 app.use('/api/expenses', expenseRoutes);
 
 // Server Listener for Local Dev & Serverless Export for Vercel
