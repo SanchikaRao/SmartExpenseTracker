@@ -6,21 +6,21 @@ const API_URL = 'https://smartexpensetracker-api.vercel.app/api/expenses';
 
 export function ExpenseProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
-  
-  // Initialize budget from localStorage or default to 0
+
+  // Load saved budget from localStorage, or default to 0
   const [budget, setBudgetState] = useState(() => {
     const savedBudget = localStorage.getItem('app_budget');
     return savedBudget !== null ? Number(savedBudget) : 0;
   });
 
-  // Save budget to state & localStorage
+  // Function to set and persist budget
   const setBudget = (newBudget) => {
     const amount = Number(newBudget);
     setBudgetState(amount);
     localStorage.setItem('app_budget', amount);
   };
 
-  // Fetch expenses from live Vercel API
+  // Fetch initial expenses from Vercel MongoDB API
   useEffect(() => {
     fetchExpenses();
   }, []);

@@ -1,101 +1,58 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import { ExpenseProvider } from './context/ExpenseContext';
-import Analytics from './components/Analytics';
-import ExpenseForm from './components/ExpenseForm';
-import ExpenseList from './components/ExpenseList';
-import ReceiptScanner from './components/ReceiptScanner';
-import { LayoutDashboard, Camera, PlusCircle, History } from 'lucide-react';
+import { useExpenses } from './context/ExpenseContext';
 
-export default function App() {
+function App() {
+  const { budget, setBudget, totalSpent, expenses } = useExpenses();
+  const remaining = budget - totalSpent;
+
   return (
-    <ExpenseProvider>
-      <Router>
-        <div className="min-h-screen bg-slate-900 flex justify-center items-center p-0 sm:p-4">
-          {/* Mobile App Container */}
-          <div className="w-full max-w-sm bg-slate-50 h-screen sm:h-[800px] sm:rounded-[40px] sm:shadow-2xl sm:border-[6px] sm:border-slate-800 flex flex-col relative overflow-hidden">
-            
-            {/* Header */}
-            <header className="p-4 bg-white/80 backdrop-blur-md border-b border-slate-100 flex justify-between items-center">
-              <div>
-                <h1 className="text-base font-extrabold text-slate-900">FinTrack AI</h1>
-                <p className="text-[10px] text-slate-400 font-medium">Smart OCR Expense Assistant[cite: 1]</p>
-              </div>
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            </header>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Smart Expense Tracker</h1>
 
-            {/* Interconnected Webpages (Routes) */}
-            <main className="p-4 flex-1 overflow-y-auto pb-20">
-              <Routes>
-                {/* Page 1: Dashboard / Overview */}
-                <Route path="/" element={
-                  <div className="space-y-4">
-                    <Analytics />
-                    <ExpenseList />
-                  </div>
-                } />
+      {/* --- BUDGET INPUT & STATS HEADER --- */}
+      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <div style={{ marginBottom: '20px' }}>
+          <label htmlFor="budget-input" style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#334155' }}>
+            Set Monthly Budget (₹)
+          </label>
+          <input
+            id="budget-input"
+            type="number"
+            placeholder="Type your budget..."
+            value={budget === 0 ? '' : budget}
+            onChange={(e) => setBudget(e.target.value)}
+            style={{
+              width: '100%',
+              maxWidth: '300px',
+              padding: '10px 12px',
+              fontSize: '1rem',
+              borderRadius: '6px',
+              border: '1px solid #cbd5e1',
+              outline: 'none'
+            }}
+          />
+        </div>
 
-                {/* Page 2: OCR Scanner Webpage */}
-                <Route path="/scan" element={
-                  <div className="space-y-4 pt-2">
-                    <ReceiptScanner />
-                  </div>
-                } />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+          <div style={{ backgroundColor: '#f0f9ff', padding: '16px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+            <span style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: '600' }}>TOTAL BUDGET</span>
+            <h2 style={{ margin: '4px 0 0 0', color: '#0c4a6e' }}>₹{Number(budget).toLocaleString()}</h2>
+          </div>
 
-                {/* Page 3: Manual Entry Webpage */}
-                <Route path="/add" element={
-                  <div className="space-y-4 pt-2">
-                    <ExpenseForm />
-                  </div>
-                } />
+          <div style={{ backgroundColor: '#fef2f2', padding: '16px', borderRadius: '8px', border: '1px solid #fecaca' }}>
+            <span style={{ fontSize: '0.85rem', color: '#b91c1c', fontWeight: '600' }}>TOTAL SPENT</span>
+            <h2 style={{ margin: '4px 0 0 0', color: '#7f1d1d' }}>₹{Number(totalSpent).toLocaleString()}</h2>
+          </div>
 
-                {/* Page 4: Full History Webpage */}
-                <Route path="/history" element={
-                  <div className="pt-2">
-                    <ExpenseList />
-                  </div>
-                } />
-              </Routes>
-            </main>
-
-            {/* Navigation Bar Linking the Pages */}
-            <nav className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 p-2 px-4 flex justify-around items-center z-30">
-              <NavLink 
-                to="/" 
-                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                <span className="text-[9px]">Dashboard</span>
-              </NavLink>
-
-              <NavLink 
-                to="/scan" 
-                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
-              >
-                <Camera className="w-5 h-5" />
-                <span className="text-[9px]">OCR Scan</span>
-              </NavLink>
-
-              <NavLink 
-                to="/add" 
-                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
-              >
-                <PlusCircle className="w-5 h-5" />
-                <span className="text-[9px]">Add New</span>
-              </NavLink>
-
-              <NavLink 
-                to="/history" 
-                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
-              >
-                <History className="w-5 h-5" />
-                <span className="text-[9px]">History</span>
-              </NavLink>
-            </nav>
-
+          <div style={{ backgroundColor: '#f0fdf4', padding: '16px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+            <span style={{ fontSize: '0.85rem', color: '#15803d', fontWeight: '600' }}>REMAINING BALANCE</span>
+            <h2 style={{ margin: '4px 0 0 0', color: '#14532d' }}>₹{Number(remaining).toLocaleString()}</h2>
           </div>
         </div>
-      </Router>
-    </ExpenseProvider>
+      </div>
+      
+    </div>
   );
 }
+
+export default App;
