@@ -2,8 +2,11 @@ import React from 'react';
 import { useExpenses } from './context/ExpenseContext';
 
 function App() {
-  const { budget, setBudget, totalSpent, expenses } = useExpenses();
+  // Adding `|| {}` prevents destructuring errors if context is undefined
+  const { budget = 0, setBudget, totalSpent = 0, expenses = [] } = useExpenses() || {};
   const remaining = budget - totalSpent;
+
+  // ... rest of your App code
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
