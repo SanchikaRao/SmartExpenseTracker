@@ -1,149 +1,101 @@
-import React, { useState } from 'react';
-import { useExpenses } from './context/ExpenseContext';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { ExpenseProvider } from './context/ExpenseContext';
+import Analytics from './components/Analytics';
+import ExpenseForm from './components/ExpenseForm';
+import ExpenseList from './components/ExpenseList';
+import ReceiptScanner from './components/ReceiptScanner';
+import { LayoutDashboard, Camera, PlusCircle, History } from 'lucide-react';
 
-function App() {
-  const { budget = 0, setBudget, totalSpent = 0, expenses = [], addExpense, deleteExpense } = useExpenses() || {};
-  const remaining = budget - totalSpent;
-
-  // Local state for the inline add expense form
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Food');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!title || !amount) return;
-    if (addExpense) {
-      addExpense({ title, amount: Number(amount), category });
-    }
-    setTitle('');
-    setAmount('');
-  };
-
+export default function App() {
   return (
-    <div style={{ maxWidth: '850px', margin: '0 auto', padding: '24px 16px', fontFamily: 'system-ui, sans-serif' }}>
-      
-      {/* HEADER */}
-      <header style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ color: '#0f172a', margin: '0 0 6px 0' }}>Smart Expense Tracker</h1>
-        <p style={{ color: '#64748b', margin: 0 }}>Manage your budget and track expenses</p>
-      </header>
+    <ExpenseProvider>
+      <Router>
+        <div className="min-h-screen bg-slate-900 flex justify-center items-center p-0 sm:p-4">
+          {/* Mobile App Container */}
+          <div className="w-full max-w-sm bg-slate-50 h-screen sm:h-[800px] sm:rounded-[40px] sm:shadow-2xl sm:border-[6px] sm:border-slate-800 flex flex-col relative overflow-hidden">
+            
+            {/* Header */}
+            <header className="p-4 bg-white/80 backdrop-blur-md border-b border-slate-100 flex justify-between items-center">
+              <div>
+                <h1 className="text-base font-extrabold text-slate-900">FinTrack AI</h1>
+                <p className="text-[10px] text-slate-400 font-medium">Smart OCR Expense Assistant</p>
+              </div>
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            </header>
 
-      {/* BUDGET & SUMMARY CARDS */}
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-        <div style={{ marginBottom: '18px' }}>
-          <label htmlFor="budget-input" style={{ display: 'block', fontWeight: '600', marginBottom: '6px', color: '#334155' }}>
-            Set Monthly Budget (₹)
-          </label>
-          <input
-            id="budget-input"
-            type="number"
-            placeholder="Type your budget..."
-            value={budget === 0 ? '' : budget}
-            onChange={(e) => setBudget && setBudget(e.target.value)}
-            style={{
-              width: '100%',
-              maxWidth: '280px',
-              padding: '10px 12px',
-              fontSize: '1rem',
-              borderRadius: '6px',
-              border: '1px solid #cbd5e1',
-              outline: 'none'
-            }}
-          />
+            {/* Interconnected Webpages (Routes) */}
+            <main className="p-4 flex-1 overflow-y-auto pb-20">
+              <Routes>
+                {/* Page 1: Dashboard / Overview */}
+                <Route path="/" element={
+                  <div className="space-y-4">
+                    <Analytics />
+                    <ExpenseList />
+                  </div>
+                } />
+
+                {/* Page 2: OCR Scanner Webpage */}
+                <Route path="/scan" element={
+                  <div className="space-y-4 pt-2">
+                    <ReceiptScanner />
+                  </div>
+                } />
+
+                {/* Page 3: Manual Entry Webpage */}
+                <Route path="/add" element={
+                  <div className="space-y-4 pt-2">
+                    <ExpenseForm />
+                  </div>
+                } />
+
+                {/* Page 4: Full History Webpage */}
+                <Route path="/history" element={
+                  <div className="pt-2">
+                    <ExpenseList />
+                  </div>
+                } />
+              </Routes>
+            </main>
+
+            {/* Navigation Bar Linking the Pages */}
+            <nav className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 p-2 px-4 flex justify-around items-center z-30">
+              <NavLink 
+                to="/" 
+                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                <span className="text-[9px]">Dashboard</span>
+              </NavLink>
+
+              <NavLink 
+                to="/scan" 
+                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
+              >
+                <Camera className="w-5 h-5" />
+                <span className="text-[9px]">OCR Scan</span>
+              </NavLink>
+
+              <NavLink 
+                to="/add" 
+                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
+              >
+                <PlusCircle className="w-5 h-5" />
+                <span className="text-[9px]">Add New</span>
+              </NavLink>
+
+              <NavLink 
+                to="/history" 
+                className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-2xl transition-all ${isActive ? 'text-indigo-600 font-bold scale-105' : 'text-slate-400'}`}
+              >
+                <History className="w-5 h-5" />
+                <span className="text-[9px]">History</span>
+              </NavLink>
+            </nav>
+
+          </div>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-          <div style={{ backgroundColor: '#f0f9ff', padding: '16px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-            <span style={{ fontSize: '0.8rem', color: '#0369a1', fontWeight: '700' }}>TOTAL BUDGET</span>
-            <h2 style={{ margin: '4px 0 0 0', color: '#0c4a6e' }}>₹{Number(budget).toLocaleString()}</h2>
-          </div>
-
-          <div style={{ backgroundColor: '#fef2f2', padding: '16px', borderRadius: '8px', border: '1px solid #fecaca' }}>
-            <span style={{ fontSize: '0.8rem', color: '#b91c1c', fontWeight: '700' }}>TOTAL SPENT</span>
-            <h2 style={{ margin: '4px 0 0 0', color: '#7f1d1d' }}>₹{Number(totalSpent).toLocaleString()}</h2>
-          </div>
-
-          <div style={{ backgroundColor: '#f0fdf4', padding: '16px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-            <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: '700' }}>REMAINING BALANCE</span>
-            <h2 style={{ margin: '4px 0 0 0', color: '#14532d' }}>₹{Number(remaining).toLocaleString()}</h2>
-          </div>
-        </div>
-      </div>
-
-      {/* ADD EXPENSE FORM */}
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-        <h3 style={{ margin: '0 0 16px 0', color: '#1e293b' }}>Add New Expense</h3>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <input
-            type="text"
-            placeholder="Expense title e.g. Lunch"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            style={{ flex: '2', minWidth: '180px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-          />
-          <input
-            type="number"
-            placeholder="Amount (₹)"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            style={{ flex: '1', minWidth: '120px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-          />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            style={{ flex: '1', minWidth: '120px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-          >
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Bills">Bills</option>
-            <option value="Other">Other</option>
-          </select>
-          <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
-            Add Expense
-          </button>
-        </form>
-      </div>
-
-      {/* RECENT TRANSACTIONS TABLE */}
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px' }}>
-        <h3 style={{ margin: '0 0 16px 0', color: '#1e293b' }}>Recent Transactions</h3>
-        {expenses.length === 0 ? (
-          <p style={{ color: '#94a3b8', margin: 0 }}>No expenses added yet.</p>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left' }}>
-                <th style={{ padding: '8px 0', color: '#64748b' }}>Title</th>
-                <th style={{ padding: '8px 0', color: '#64748b' }}>Category</th>
-                <th style={{ padding: '8px 0', color: '#64748b', textAlign: 'right' }}>Amount</th>
-                <th style={{ padding: '8px 0', color: '#64748b', textAlign: 'center' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {expenses.map((item) => (
-                <tr key={item.id || item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '12px 0', fontWeight: '500' }}>{item.title || item.description}</td>
-                  <td style={{ padding: '12px 0', color: '#64748b' }}>{item.category}</td>
-                  <td style={{ padding: '12px 0', textAlign: 'right', fontWeight: '600', color: '#dc2626' }}>₹{item.amount}</td>
-                  <td style={{ padding: '12px 0', textAlign: 'center' }}>
-                    <button
-                      onClick={() => deleteExpense && deleteExpense(item.id || item._id)}
-                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.85rem' }}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-    </div>
+      </Router>
+    </ExpenseProvider>
   );
 }
-
-export default App;
