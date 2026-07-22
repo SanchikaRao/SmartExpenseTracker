@@ -6,9 +6,21 @@ const API_URL = 'https://smartexpensetracker-api.vercel.app/api/expenses';
 
 export function ExpenseProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
-  const [budget, setBudget] = useState(25000);
+  
+  // Initialize budget from localStorage or default to 0
+  const [budget, setBudgetState] = useState(() => {
+    const savedBudget = localStorage.getItem('app_budget');
+    return savedBudget !== null ? Number(savedBudget) : 0;
+  });
 
-  // Fetch expenses from live API on component mount
+  // Save budget to state & localStorage
+  const setBudget = (newBudget) => {
+    const amount = Number(newBudget);
+    setBudgetState(amount);
+    localStorage.setItem('app_budget', amount);
+  };
+
+  // Fetch expenses from live Vercel API
   useEffect(() => {
     fetchExpenses();
   }, []);
@@ -32,7 +44,6 @@ export function ExpenseProvider({ children }) {
       date: expense.date || new Date().toISOString().split('T')[0]
     };
 
-    // Optimistic UI update
     setExpenses((prev) => [...prev, newExpense]);
 
     try {
@@ -47,7 +58,6 @@ export function ExpenseProvider({ children }) {
   };
 
   const deleteExpense = async (id) => {
-    // Optimistic UI update
     setExpenses((prev) => prev.filter((item) => item.id !== id));
 
     try {
